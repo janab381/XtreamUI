@@ -1,7 +1,10 @@
 <?php
 include "functions.php";
+$resDNS = getRegisteredUser($_SESSION['user_id']);
+$resDNS = $resDNS["reseller_dns"];
 if (!isset($_SESSION['user_id'])) { header("Location: ./login.php"); exit; }
 include "header.php";
+
 ?>        <div class="wrapper">
             <div class="container-fluid">
 
@@ -91,8 +94,8 @@ include "header.php";
                                         <option value="type=m3u&amp;output=mpegts">Standard M3U - MPEGTS</option>
                                     </optgroup>
                                     <optgroup label="Enigma 2 OE 1.6">
-                                        <option value="type=enigma16&amp;output=hls">Enigma 2 - HLS </option>
-                                        <option value="type=enigma16&amp;output=mpegts">Enigma 2 - MPEGTS</option>
+                                        <option value="type=enigma22_script&amp;output=hls">Enigma 2 - HLS </option>
+                                        <option value="type=enigma22_script&amp;output=ts">Enigma 2 - MPEGTS</option>
                                     </optgroup>
                                     <optgroup label="DreamBox OE 2.0">
                                         <option value="type=dreambox&amp;output=hls">DreamBox - HLS </option>
@@ -198,6 +201,10 @@ include "header.php";
         <script src="assets/libs/pdfmake/pdfmake.min.js"></script>
         <script src="assets/libs/pdfmake/vfs_fonts.js"></script>
         <!-- third party js ends -->
+<script>
+   let $before = "";
+    let $after = "";
+</script>
 
         <!-- Datatables init -->
         <script>
@@ -244,10 +251,34 @@ include "header.php";
             $('.downloadModal').data('password', password);
             $('.downloadModal').modal('show');
         }
-        
+
+
+
+
         $("#download_type").change(function() {
             if ($("#download_type").val().length > 0) {
-                $("#download_url").val("http://<?=($rServers[$_INFO["server_id"]]["domain_name"] ? $rServers[$_INFO["server_id"]]["domain_name"] : $rServers[$_INFO["server_id"]]["server_ip"])?>:<?=$rServers[$_INFO["server_id"]]["http_broadcast_port"]?>/get.php?username=" + $('.downloadModal').data('username') + "&password=" + $('.downloadModal').data('password') + "&" + decodeURIComponent($('.downloadModal select').val()));
+                if ($("#download_type").val()=="type=enigma22_script&output=hls" || $("#download_type").val()=="type=enigma22_script&output=ts"  ) {
+                    $before = "wget -O /etc/enigma2/iptv.sh \"";
+                    $after = "\" && chmod 777 /etc/enigma2/iptv.sh && /etc/enigma2/iptv.sh";
+                }
+                else
+                {
+                    $before = "";
+                    $after = "";
+                }
+                <?php
+                    if(isset($resDNS) && $resDNS!=""){
+                        $DNS = $resDNS;
+                    }
+                    else
+                    {
+                        $DNS = $rServers[$_INFO["server_id"]]["domain_name"] ? $rServers[$_INFO["server_id"]]["domain_name"] : $rServers[$_INFO["server_id"]]["server_ip"];
+
+                    }
+
+
+                ?>
+                $("#download_url").val($before + "http://<?=$DNS?>:<?=$rServers[$_INFO["server_id"]]["http_broadcast_port"]?>/get.php?username=" + $('.downloadModal').data('username') + "&password=" + $('.downloadModal').data('password') + "&" + decodeURIComponent($('.downloadModal select').val() +$after));
             } else {
                 $("#download_url").val("");
             }

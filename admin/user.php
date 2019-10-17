@@ -25,7 +25,16 @@ if (isset($_POST["submit_user"])) {
         }
     }
     if ((($_POST["is_mag"]) && (!filter_var($_POST["mac_address_mag"], FILTER_VALIDATE_MAC))) OR ((strlen($_POST["mac_address_e2"]) > 0) && (!filter_var($_POST["mac_address_e2"], FILTER_VALIDATE_MAC)))) {
+
         $_STATUS = 4;
+    }
+    if(isset($_POST["mac_address_mag"]))
+    {
+        $mac = base64_encode( $_POST["mac_address_mag"] );
+        $result = $db->query("SELECT mag_id FROM mag_devices WHERE mac = \"".$mac."\" LIMIT 1;");
+        if (($result) && ($result->num_rows > 0)) {
+            $_STATUS = 5; // Username in use.
+        }
     }
     foreach (Array("max_connections", "enabled", "admin_enabled") as $rSelection) {
         if (isset($_POST[$rSelection])) {
@@ -167,43 +176,52 @@ include "header.php"; ?>
                 <div class="row">
                     <div class="col-xl-12">
                         <?php if (isset($_STATUS)) {
-                        if ($_STATUS == 0) { ?>
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            User operation was completed successfully.
-                        </div>
-                        <?php } else if ($_STATUS == 1) { ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            An incorrect expiration date was entered, please try again.
-                        </div>
-                        <?php } else if ($_STATUS == 2) { ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            There was an error performing this operation! Please check the form entry and try again.
-                        </div>
-                        <?php } else if ($_STATUS == 3) { ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            This username already exists. Please try another.
-                        </div>
-                        <?php } else if ($_STATUS == 4) { ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            An invalid MAC address was entered, please try again.
-                        </div>
-                        <?php } 
-                        } ?>
+                            if ($_STATUS == 0) { ?>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    User operation was completed successfully.
+                                </div>
+                            <?php } else if ($_STATUS == 1) { ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    An incorrect expiration date was entered, please try again.
+                                </div>
+                            <?php } else if ($_STATUS == 2) { ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    There was an error performing this operation! Please check the form entry and try
+                                    again.
+                                </div>
+                            <?php } else if ($_STATUS == 3) { ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    This username already exists. Please try another.
+                                </div>
+                            <?php } else if ($_STATUS == 4) { ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    An invalid MAC address was entered, please try again.
+                                </div>
+                            <?php } else if ($_STATUS == 5) { ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    This MAC Address already exists. Please try another.
+                                </div>
+                            <?php }
+                        }
+                        ?>
                         <div class="card">
                             <div class="card-body">
                                 <form action="./user.php<?php if (isset($_GET["id"])) { echo "?id=".$_GET["id"]; } ?>" method="POST" id="user_form">
