@@ -169,7 +169,7 @@ include "header.php"; ?>
                                                             </div>
                                                             <label class="col-md-4 col-form-label" for="trial_credits">Trial Credits</label>
                                                             <div class="col-md-2">
-                                                                <input type="text" class="form-control" id="trial_credits" name="trial_credits" value="<?php if (isset($rPackage)) { echo $rPackage["trial_credits"]; } else { echo "0"; } ?>">
+                                                                <input type="text" class="form-control" id="trial_credits" name="trial_credits"  onkeypress="return isNumberKey(event)" value="<?php if (isset($rPackage)) { echo $rPackage["trial_credits"]; } else { echo "0"; } ?>">
                                                             </div>
                                                         </div>
                                                         <div class="form-group row mb-4">
@@ -193,7 +193,7 @@ include "header.php"; ?>
                                                             </div>
                                                             <label class="col-md-4 col-form-label" for="official_credits">Official Credits</label>
                                                             <div class="col-md-2">
-                                                                <input type="text" class="form-control" id="official_credits" name="official_credits" value="<?php if (isset($rPackage)) { echo $rPackage["official_credits"]; } else { echo "0"; } ?>">
+                                                                <input type="text" class="form-control" id="official_credits" name="official_credits" onkeypress="return isNumberKey(event)" value="<?php if (isset($rPackage)) { echo $rPackage["official_credits"]; } else { echo "0"; } ?>">
                                                             </div>
                                                         </div>
                                                         <div class="form-group row mb-4">
@@ -419,12 +419,23 @@ include "header.php"; ?>
             });
 
             $("#max_connections").inputFilter(function(value) { return /^\d*$/.test(value); });
-            $("#trial_credits").inputFilter(function(value) { return /^\d*$/.test(value); });
             $("#trial_duration").inputFilter(function(value) { return /^\d*$/.test(value); });
-            $("#official_credits").inputFilter(function(value) { return /^\d*$/.test(value); });
             $("#official_duration").inputFilter(function(value) { return /^\d*$/.test(value); });
             $("form").attr('autocomplete', 'off');
         });
         </script>
+<SCRIPT>
+    <!--
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+    //-->
+</SCRIPT>
     </body>
 </html>

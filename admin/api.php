@@ -305,7 +305,18 @@ if (isset($_GET["action"])) {
             $rData["exp_date"] = date('Y-m-d', strtotime('+'.intval($rData["official_duration"]).' '.$rData["official_duration_in"]));
             if (isset($_GET["user_id"])) {
                 if ($rUser = getUser($_GET["user_id"])) {
-                    $rData["exp_date"] = date('Y-m-d', strtotime('+'.intval($rData["official_duration"]).' '.$rData["official_duration_in"], $rUser["exp_date"]));
+                    $now = new DateTime('now');
+                    $now = $now->getTimestamp();
+                    $exp = $rUser["exp_date"];
+                    if($now < $exp) {
+                        $rData["exp_date"] =date('Y-m-d', strtotime('+'.intval($rData["official_duration"]).' '.$rData["official_duration_in"],$exp));
+                    }
+                    else
+                    {
+                        $rData["exp_date"] =date('Y-m-d', strtotime('+'.intval($rData["official_duration"]).' '.$rData["official_duration_in"]));
+
+                    }
+
                 }
             }
             foreach (json_decode($rData["bouquets"], True) as $rBouquet) {
@@ -416,7 +427,7 @@ if (isset($_GET["action"])) {
             if (($rUptime["h"] > 0) OR (strlen($return["uptime"]) > 0)) { $return["uptime"] .= $rUptime["h"]."h "; }
             if (($rUptime["m"] > 0) OR (strlen($return["uptime"]) > 0)) { $return["uptime"] .= $rUptime["m"]."m "; }
             if (($rUptime["s"] > 0) OR (strlen($return["uptime"]) > 0)) { $return["uptime"] .= $rUptime["s"]."s "; }
-            
+
         }
         echo json_encode($return);exit;
     } else if ($_GET["action"] == "reseller_dashboard") {

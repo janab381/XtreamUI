@@ -71,9 +71,9 @@ if (isset($_POST["submit_user"])) {
                 $rInsertID = $db->insert_id;
             }
             if (isset($rCost)) {
-                $rNewCredits = intval($rUserInfo["credits"]) - intval($rCost);
-                $db->query("UPDATE `reg_users` SET `credits` = ".intval($rNewCredits)." WHERE `id` = ".intval($rUserInfo["id"]).";");
-                $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Subreseller</u>] Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                $rNewCredits = ($rUserInfo["credits"]) - ($rCost);
+                $db->query("UPDATE `reg_users` SET `credits` = ".($rNewCredits)." WHERE `id` = ".($rUserInfo["id"]).";");
+                $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Subreseller</u>] Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                 $rUserInfo["credits"] = $rNewCredits;
             }
             $_STATUS = 0;
@@ -242,9 +242,9 @@ include "header.php"; ?>
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 0)?></td>
+                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 2)?></td>
                                                                         <td class="text-center" id="cost_credits"><?=number_format($rPermissions["create_sub_resellers_price"], 0)?></td>
-                                                                        <td class="text-center" id="remaining_credits"><?=number_format($rUserInfo["credits"] - $rPermissions["create_sub_resellers_price"], 0)?></td>
+                                                                        <td class="text-center" id="remaining_credits"><?=number_format($rUserInfo["credits"] - $rPermissions["create_sub_resellers_price"], 2)?></td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>

@@ -199,7 +199,7 @@ include "header.php";
                 $(".active-connections .entry").html($.number(data.open_connections, 0));
                 $(".online-users .entry").html($.number(data.online_users, 0));
                 $(".active-accounts .entry").html($.number(data.active_accounts, 0));
-                $(".credits .entry").html($.number(data.credits, 0));
+                $(".credits .entry").html($.number(data.credits, 2));
                 if (Date.now() - rStart < 1000) {
                     setTimeout(getStats, 1000 - (Date.now() - rStart));
                 } else {

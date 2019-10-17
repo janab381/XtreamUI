@@ -2,6 +2,8 @@
 include "functions.php";
 if (!isset($_SESSION['user_id'])) { header("Location: ./login.php"); exit; }
 if (!$rPermissions["is_admin"]) { exit; }
+$changepass = getMemberGroup($_SESSION["user_id"]);
+$changepass =  $changepass["allow_change_pass"];
 
 if (isset($_POST["submit_user"])) {
     if (isset($_POST["edit"])) {
@@ -241,12 +243,14 @@ include "header.php"; ?>
                                                                 <input type="text" class="form-control" id="username" name="username" placeholder="auto-generate if blank" value="<?php if (isset($rUser)) { echo $rUser["username"]; } ?>">
                                                             </div>
                                                         </div>
+                                                        <?php if (isset($changepass) && $changepass==1) { ?>
                                                         <div class="form-group row mb-4">
                                                             <label class="col-md-4 col-form-label" for="password">Password</label>
                                                             <div class="col-md-8">
                                                                 <input type="text" class="form-control" id="password" name="password" placeholder="auto-generate if blank" value="<?php if (isset($rUser)) { echo $rUser["password"]; } ?>">
                                                             </div>
                                                         </div>
+                                                        <?php } ?>
                                                         <div class="form-group row mb-4">
                                                             <label class="col-md-4 col-form-label" for="member_id">Owner</label>
                                                             <div class="col-md-8">

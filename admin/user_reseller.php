@@ -2,6 +2,8 @@
 include "functions.php";
 if (!isset($_SESSION['user_id'])) { header("Location: ./login.php"); exit; }
 if ($rPermissions["is_admin"]) { exit; }
+$changepass = getMemberGroup($rUserInfo["id"]);
+$changepass =  $changepass["allow_change_pass"];
 
 $rRegisteredUsers = getRegisteredUsers($rUserInfo["id"]);
 
@@ -9,6 +11,10 @@ if ((isset($_GET["trial"])) OR (isset($_POST["trial"]))) {
     $canGenerateTrials = checkTrials();
 } else {
     $canGenerateTrials = True;
+}
+// Reset Password if disabled for resellers.
+if(isset($_POST["reset_pass"])){
+    $_POST["password"] = "";
 }
 
 if (isset($_POST["submit_user"])) {
@@ -150,23 +156,23 @@ if (isset($_POST["submit_user"])) {
                     $rInsertID = $db->insert_id;
                 }
                 if (isset($rCost)) {
-                    $rNewCredits = intval($rUserInfo["credits"]) - intval($rCost);
-                    $db->query("UPDATE `reg_users` SET `credits` = ".intval($rNewCredits)." WHERE `id` = ".intval($rUserInfo["id"]).";");
+                    $rNewCredits = ($rUserInfo["credits"]) - ($rCost);
+                    $db->query("UPDATE `reg_users` SET `credits` = ".($rNewCredits)." WHERE `id` = ".intval($rUserInfo["id"]).";");
                     if (isset($rUser)) {
                         if ($isMag) {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend MAG</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend MAG</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         } else if ($isE2) {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend Enigma</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend Enigma</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         } else {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend Line</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>Extend Line</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         }
                     } else {
                         if ($isMag) {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New MAG</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New MAG</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         } else if ($isE2) {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Enigma</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Enigma</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         } else {
-                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Line</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+                            $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rArray["username"])."', '".$db->real_escape_string($rArray["password"])."', ".intval(time()).", '[<b>UserPanel</b> -> <u>New Line</u>] with Package [".$db->real_escape_string($rPackage["package_name"])."], Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
                         }
                         $rAccessOutput = json_decode($rPackage["output_formats"], True);
                         $rLockDevice = $rPackage["lock_device"];
@@ -334,18 +340,28 @@ include "header.php"; ?>
                                             <div class="tab-pane" id="user-details">
                                                 <div class="row">
                                                     <div class="col-12">
-                                                        <div class="form-group row mb-4">
+                                                        <div class="form-group row mb-4" id="uname">
                                                             <label class="col-md-4 col-form-label" for="username">Username</label>
                                                             <div class="col-md-8">
                                                                 <input type="text" class="form-control" id="username" name="username" placeholder="auto-generate if blank" value="<?php if (isset($rUser)) { echo $rUser["username"]; } ?>">
                                                             </div>
                                                         </div>
-                                                        <div class="form-group row mb-4">
+                                                        <?php if ($changepass==1) { ?>
+                                                        <div class="form-group row mb-4" id="pass">
                                                             <label class="col-md-4 col-form-label" for="password">Password</label>
                                                             <div class="col-md-8">
                                                                 <input type="text" class="form-control" id="password" name="password" placeholder="auto-generate if blank" value="<?php if (isset($rUser)) { echo $rUser["password"]; } ?>">
                                                             </div>
                                                         </div>
+                                                        <?php } ?>
+                                                        <?php if (isset($_GET["id"]) && $changepass==0) { ?>
+                                                            <div class="form-group row mb-4" id="pass">
+                                                                <label class="col-md-4 col-form-label" for="password">Password</label>
+                                                                <div class="col-md-8">
+                                                                    <input type="text" class="form-control" id="password" readonly name="password" placeholder="auto-generate if blank" value="<?php if (isset($rUser)) { echo $rUser["password"]; } ?>">
+                                                                </div>
+                                                            </div>
+                                                        <?php } ?>
                                                         <div class="form-group row mb-4">
                                                             <label class="col-md-4 col-form-label" for="member_id">Owner</label>
                                                             <div class="col-md-8">
@@ -395,6 +411,14 @@ include "header.php"; ?>
                                                                 <input<?php if (isset($rUser)) { echo " disabled"; } ?> name="is_e2" id="is_e2" type="checkbox" <?php if (isset($rUser)) { if ($rUser["is_e2"] == 1) { echo "checked "; } } else if (isset($_GET["e2"])) { echo "checked "; } ?>data-plugin="switchery" class="js-switch" data-color="#039cfd"/>
                                                             </div>
                                                         </div>
+                                                        <?php if ($changepass==0) { ?>
+                                                        <div class="form-group row mb-4">
+                                                            <label class="col-md-4 col-form-label" for="reset_pass">Reset Password <i data-toggle="tooltip" data-placement="top" title="" data-original-title="Allows you to generate a new random pass for the User." class="mdi mdi-information"></i></label>
+                                                            <div class="col-md-2">
+                                                                <input name="reset_pass" id="reset_pass" type="checkbox" data-plugin="switchery" class="js-switch" data-color="#039cfd"/>
+                                                            </div>
+                                                        </div>
+                                                        <?php } ?>
                                                         <div class="form-group row mb-4" style="display:none" id="mac_entry_mag">
                                                             <label class="col-md-4 col-form-label" for="mac_address_mag">MAC Address</label>
                                                             <div class="col-md-8">
@@ -443,7 +467,7 @@ include "header.php"; ?>
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 0)?></td>
+                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 2)?></td>
                                                                         <td class="text-center" id="cost_credits"></td>
                                                                         <td class="text-center" id="remaining_credits"></td>
                                                                     </tr>
@@ -554,14 +578,20 @@ include "header.php"; ?>
             if (($("#is_mag").is(":checked")) || ($("#is_e2").is(":checked"))) {
                 if ($("#is_mag").is(":checked")) {
                     $("#mac_entry_mag").show();
+                    $("#uname").hide();
+                    $("#pass").hide();
                     window.swObjs["is_e2"].disable();
                 } else {
                     $("#mac_entry_e2").show();
+                    $("#uname").hide();
+                    $("#pass").hide();
                     window.swObjs["is_mag"].disable();
                 }
             } else {
                 $("#mac_entry_mag").hide();
                 $("#mac_entry_e2").hide();
+                $("#uname").show();
+                $("#pass").show();
                 <?php if (!isset($rUser)) { ?>
                 window.swObjs["is_e2"].enable();
                 window.swObjs["is_mag"].enable();
@@ -584,8 +614,8 @@ include "header.php"; ?>
                 $.getJSON("./api.php?action=get_package<?php if (isset($_GET["trial"])) { echo "_trial"; } ?>&package_id=" + $("#package").val()<?php if (isset($rUser)) { echo " + \"&user_id=".$rUser["id"]."\""; } ?>, function(rData) {
                     if (rData.result === true) {
                         $("#max_connections").val(rData.data.max_connections);
-                        $("#cost_credits").html($.number(rData.data.cost_credits, 0));
-                        $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?> - rData.data.cost_credits, 0));
+                        $("#cost_credits").html($.number(rData.data.cost_credits, 2));
+                        $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?> - rData.data.cost_credits, 2));
                         $("#exp_date").val(rData.data.exp_date);
                         if (<?=$rUserInfo["credits"]?> - rData.data.cost_credits < 0) {
                             $("#credits-cost").hide();
@@ -619,7 +649,7 @@ include "header.php"; ?>
             } else {
                 $("#max_connections").val(<?=$rUser["max_connections"]?>);
                 $("#cost_credits").html(0);
-                $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?>, 0));
+                $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?>, 2));
                 $("#exp_date").val('<?=date("Y-m-d", $rUser["exp_date"])?>');
                 <?php if (!$canGenerateTrials) { ?>
                 $(".purchase").prop('disabled', true);

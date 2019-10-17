@@ -59,8 +59,7 @@
                         <?php if ($rPermissions["is_reseller"]) { ?>
                         <li class="notification-list">
                             <a class="nav-link text-white waves-effect" href="#" role="button">
-                                <i class="fe-dollar-sign noti-icon"></i>
-                                <?=number_format($rUserInfo["credits"], 0)?>
+                                <?=number_format($rUserInfo["credits"], 2)?>
                             </a>
                         </li>
                         <?php } ?>

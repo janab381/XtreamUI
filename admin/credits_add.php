@@ -11,11 +11,11 @@ if ((isset($_POST["submit_credits"])) && (isset($_POST["id"]))) {
         $_STATUS = 1;
     }
     if ((!isset($_STATUS)) && ($rUser)) {
-        $rNewCredits = intval($rUserInfo["credits"]) - intval($rCost);
-        $rUpdCredits = intval($rUser["credits"]) + intval($rCost);
-        $db->query("UPDATE `reg_users` SET `credits` = ".intval($rNewCredits)." WHERE `id` = ".intval($rUserInfo["id"]).";");
-        $db->query("UPDATE `reg_users` SET `credits` = ".intval($rUpdCredits)." WHERE `id` = ".intval($rUser["id"]).";");
-        $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rUser["username"])."', '', ".intval(time()).", '[<b>UserPanel</b> -> <u>Transfer Credits</u>] Credits: <font color=\"green\">".intval($rUserInfo["credits"])."</font> -> <font color=\"red\">".intval($rNewCredits)."</font>');");
+        $rNewCredits = ($rUserInfo["credits"]) - ($rCost);
+        $rUpdCredits = ($rUser["credits"]) + ($rCost);
+        $db->query("UPDATE `reg_users` SET `credits` = ".($rNewCredits)." WHERE `id` = ".($rUserInfo["id"]).";");
+        $db->query("UPDATE `reg_users` SET `credits` = ".($rUpdCredits)." WHERE `id` = ".($rUser["id"]).";");
+        $db->query("INSERT INTO `reg_userlog`(`owner`, `username`, `password`, `date`, `type`) VALUES(".intval($rUserInfo["id"]).", '".$db->real_escape_string($rUser["username"])."', '', ".intval(time()).", '[<b>UserPanel</b> -> <u>Transfer Credits</u> -> <u>Subreseller</u> -> <b>".$rUser["username"]." </b>]Credits: <font color=\"green\">".($rUserInfo["credits"])."</font> -> <font color=\"red\">".($rNewCredits)."</font>');");
         header("Location: ./reg_users.php");exit;
     }
 }
@@ -96,7 +96,7 @@ include "header.php"; ?>
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr>
-                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 0)?></td>
+                                                                        <td class="text-center"><?=number_format($rUserInfo["credits"], 2)?></td>
                                                                         <td class="text-center" id="cost_credits"></td>
                                                                         <td class="text-center" id="remaining_credits"></td>
                                                                     </tr>
@@ -177,8 +177,8 @@ include "header.php"; ?>
             if (!$.isNumeric(rCredits)) {
                 rCredits = 0;
             }
-            $("#cost_credits").html($.number(rCredits, 0));
-            $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?> - rCredits, 0));
+            $("#cost_credits").html($.number(rCredits, 2));
+            $("#remaining_credits").html($.number(<?=$rUserInfo["credits"]?> - rCredits, 2));
             if (<?=$rUserInfo["credits"]?> - rCredits < 0) {
                 $("#no-credits").show()
                 $(".purchase").prop('disabled', true);
@@ -215,5 +215,6 @@ include "header.php"; ?>
             calculateCredits();
         });
         </script>
+
     </body>
 </html>
