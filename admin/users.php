@@ -54,7 +54,7 @@ include "header.php";
                                             <th class="text-center">ID</th>
                                             <th>Username</th>
                                             <th>Password</th>
-                                            <th>Owner</th>
+                                            <th class="text-center">Status</th>
                                             <th class="text-center">Status</th>
                                             <th class="text-center">Online</th>
                                             <th class="text-center">Trial</th>
@@ -62,6 +62,8 @@ include "header.php";
                                             <th class="text-center">Connections</th>
                                             <th class="text-center">Last Connection</th>
                                             <th class="text-center">Actions</th>
+                                            <th class="text-center">#</th>
+                                            <th class="">Notes</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -341,8 +343,8 @@ include "header.php";
                     }
                 },
                 columnDefs: [
-                    {"className": "dt-center", "targets": [0,4,5,6,7,8,9,10]},
-                    {"visible": false, "targets": [9,11,12]}
+                    {"visible": true, "className": "dt-center", "targets": [0,5,6,7,8,10,12]},
+                    {"visible": false, "targets": [3,9,11]}
                 ],
             });
             <?php if (!$detect->isMobile()) { ?>

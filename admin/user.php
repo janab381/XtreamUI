@@ -28,12 +28,12 @@ if (isset($_POST["submit_user"])) {
 
         $_STATUS = 4;
     }
-    if(isset($_POST["mac_address_mag"]))
+    if(isset($_POST["mac_address_mag"]) && !isset($_POST["edit"]))
     {
         $mac = base64_encode( $_POST["mac_address_mag"] );
         $result = $db->query("SELECT mag_id FROM mag_devices WHERE mac = \"".$mac."\" LIMIT 1;");
         if (($result) && ($result->num_rows > 0)) {
-            $_STATUS = 5; // Username in use.
+            $_STATUS = 5; // MAC in use.
         }
     }
     foreach (Array("max_connections", "enabled", "admin_enabled") as $rSelection) {

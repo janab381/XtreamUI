@@ -47,10 +47,21 @@ if (isset($_POST["submit_user"])) {
                         $rArray["exp_date"] = strtotime('+'.intval($rPackage["trial_duration"]).' '.$rPackage["trial_duration_in"]);
                         $rArray["is_trial"] = 1;
                     } else {
+                        if(!isset($rUser))
+                        {
+                            $rArray["exp_date"] = strtotime('+' . intval($rPackage["official_duration"]) . ' ' . $rPackage["official_duration_in"]);
+                        }
                         if (isset($rUser)) {
-                            $rArray["exp_date"] = strtotime('+'.intval($rPackage["official_duration"]).' '.$rPackage["official_duration_in"], intval($rUser["exp_date"]));
-                        } else {
-                            $rArray["exp_date"] = strtotime('+'.intval($rPackage["official_duration"]).' '.$rPackage["official_duration_in"]);
+                            $now = new DateTime();
+                            $now = $now->getTimestamp();
+                            $exp = intval($rUser["exp_date"]);
+                            if ($now < $exp) {
+                                $rArray["exp_date"] = strtotime('+' . intval($rPackage["official_duration"]) . ' ' . $rPackage["official_duration_in"], intval($rUser["exp_date"]));
+
+                            } else {
+                                $rArray["exp_date"] = strtotime('+' . intval($rPackage["official_duration"]) . ' ' . $rPackage["official_duration_in"]);
+
+                            }
                         }
                     }
                     $rArray["bouquet"] = $rPackage["bouquets"];
@@ -97,6 +108,53 @@ if (isset($_POST["submit_user"])) {
             $rArray["member_id"] = $rUserInfo["id"]; // Invalid owner, reset.
         }
     }
+    if($_POST["extendTrial"]) {
+        $rPackage = getPackage($_POST["package"]);
+        $rArray["is_trial"] = 0;
+        $rCost = $rPackage["official_credits"];
+        if (!empty($_POST["package"])) {
+            if (($rUserInfo["credits"] > $rCost)) {
+                if (isset($rUser)) {
+                    $now = new DateTime('now');
+                    $now = $now->getTimestamp();
+                    $exp = intval($rUser["exp_date"]);
+                    if ($now < $exp) {
+                        $rArray["exp_date"] = strtotime('+' . intval($rPackage["official_duration"]) . ' ' . $rPackage["official_duration_in"], intval($rUser["exp_date"]));
+
+                    } else {
+                        $rArray["exp_date"] = strtotime('+' . intval($rPackage["official_duration"]) . ' ' . $rPackage["official_duration_in"]);
+
+                    }
+
+
+                }
+                $rArray["bouquet"] = $rPackage["bouquets"];
+                $rArray["max_connections"] = $rPackage["max_connections"];
+                $rArray["is_restreamer"] = $rPackage["is_restreamer"];
+                $rOwner = $_POST["member_id"];
+                if (in_array($rOwner, $rRegisteredUsers)) {
+                    $rArray["member_id"] = $rOwner;
+                } else {
+                    $rArray["member_id"] = $rUserInfo["id"]; // Invalid owner, reset.
+                }
+                $rArray["reseller_notes"] = $_POST["reseller_notes"];
+                if (isset($_POST["is_mag"])) {
+                    $rArray["is_mag"] = 1;
+
+                }
+                if (isset($_POST["is_e2"])) {
+                    $rArray["is_e2"] = 1;
+
+                }
+            } else {
+                $_STATUS = 4; // Not enough credits.
+            }
+        }
+        else {
+            $_STATUS = 3; // Invalid package.
+        }
+    }
+
     if (strlen($_POST["username"]) == 0) {
         $_POST["username"] = generateString(10);
     }
@@ -114,6 +172,17 @@ if (isset($_POST["submit_user"])) {
     if ((($_POST["is_mag"]) && (!filter_var($_POST["mac_address_mag"], FILTER_VALIDATE_MAC))) OR ((strlen($_POST["mac_address_e2"]) > 0) && (!filter_var($_POST["mac_address_e2"], FILTER_VALIDATE_MAC)))) {
         $_STATUS = 7;
     }
+
+    if(isset($_POST["mac_address_mag"]) && !isset($_POST["edit"]))
+    {
+        $mac = base64_encode(strtoupper($_POST["mac_address_mag"]));
+        $result = $db->query("SELECT mag_id FROM mag_devices WHERE mac = \"".$mac."\" LIMIT 1;");
+        if (($result) && ($result->num_rows > 0)) {
+            $_STATUS = 8; // MAC in use.
+        }
+    }
+
+
     if (!isset($_STATUS)) {
         $rArray["created_by"] = $rUserInfo["id"];
         $rCols = "`".implode('`,`', array_keys($rArray))."`";
@@ -135,12 +204,12 @@ if (isset($_POST["submit_user"])) {
         $isMag = False; $isE2 = False;
         // Confirm Reseller can generate MAG.
         if ($rArray["is_mag"]) {
-            if ($rPackage["can_gen_mag"]) {
+           {
                 $isMag = True;
             }
         }
         if ($rArray["is_e2"]) {
-            if ($rPackage["can_gen_e2"]) {
+            {
                 $isE2 = True;
             }
         }
@@ -308,8 +377,16 @@ include "header.php"; ?>
                             </button>
                             An invalid MAC address was entered, please try again.
                         </div>
+                        <?php } else if ($_STATUS == 8) { ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            This MAC Address already exists. Please try another.
+                        </div>
                         <?php }
-                        } ?>
+                        }
+                        ?>
                         <div class="card">
                             <div class="card-body">
                                 <form action="./user_reseller.php<?php if (isset($_GET["id"])) { echo "?id=".$_GET["id"]; } ?>" method="POST" id="user_form">
@@ -387,10 +464,29 @@ include "header.php"; ?>
                                                                         <?php }
                                                                         }
                                                                     } ?>
+                                                                    <?php } ?>
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        <?php } ?>
+                                                            <?php if ((isset($rUser)) && ($rUser["is_trial"])) { ?>
+                                                                <div class="form-group row mb-4">
+                                                                    <label class="col-md-4 col-form-label" for="package"><?php if (isset($rUser)) { echo "Extend "; } ?>Package</label>
+                                                                    <div class="col-md-8">
+                                                                        <input type="text" id="extendTrial" name="extendTrial" value="1" hidden>
+                                                                        <select name="package" id="package" class="form-control select2" data-toggle="select2">
+                                                                            <?php
+                                                                            foreach (getPackages() as $rPackage) {
+                                                                                if (in_array($rUserInfo["member_group_id"], json_decode($rPackage["groups"], True))) { ?>
+                                                                                    <?php if($rPackage["is_official"]==1) { ?>
+                                                                                        <option value="<?=$rPackage["id"]?>"><?=$rPackage["package_name"]?></option>
+                                                                                    <?php } ?>
+                                                                                <?php }
+                                                                            } ?>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                            <?php } ?>
                                                         <div class="form-group row mb-4">
                                                             <label class="col-md-4 col-form-label" for="max_connections">Max Connections</label>
                                                             <div class="col-md-2">
@@ -422,13 +518,13 @@ include "header.php"; ?>
                                                         <div class="form-group row mb-4" style="display:none" id="mac_entry_mag">
                                                             <label class="col-md-4 col-form-label" for="mac_address_mag">MAC Address</label>
                                                             <div class="col-md-8">
-                                                                <input type="text" class="form-control" id="mac_address_mag" name="mac_address_mag" value="<?php if (isset($rUser)) { echo $rUser["mac_address_mag"]; } else { echo "00:1A:79:"; } ?>">
+                                                                <input type="text" class="form-control" id="mac_address_mag" name="mac_address_mag" value="<?php if (isset($rUser)) { echo strtoupper($rUser["mac_address_mag"]); } else { echo "00:1A:79:"; } ?>">
                                                             </div>
                                                         </div>
                                                         <div class="form-group row mb-4" style="display:none" id="mac_entry_e2">
                                                             <label class="col-md-4 col-form-label" for="mac_address_e2">MAC Address</label>
                                                             <div class="col-md-8">
-                                                                <input type="text" class="form-control" id="mac_address_e2" name="mac_address_e2" value="<?php if (isset($rUser)) { echo $rUser["mac_address_e2"]; } ?>">
+                                                                <input type="text" class="form-control" id="mac_address_e2" name="mac_address_e2" value="<?php if (isset($rUser)) { echo strtoupper($rUser["mac_address_e2"]); } ?>">
                                                             </div>
                                                         </div>
                                                         <div class="form-group row mb-4">
